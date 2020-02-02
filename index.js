@@ -1,13 +1,15 @@
 const WIDTH = 700, HEIGHT= 700, SIZE = 25, SPEED = 3.333333, COOLDOWN = 0.5;
 const ENEMY_SIZE = 30;
-const ENEMY_SPEED = 2.5;
 const SPACINGY = 5;
+let ENEMY_COLOR, WAVE_COUNT = 1, ENEMY_SPEED = 2.5;
 const bullets = [];
 const enemies = [];
 let killed = 0;
 let player;
 
 function setup(){
+
+    ENEMY_COLOR = randomColor();
     
     //Assign to global player
     player = new Player(WIDTH/2 - SIZE, HEIGHT - SIZE - 5, SIZE, SIZE);
@@ -58,6 +60,9 @@ function draw(){
     }
 
     if (enemies.length == 0){
+        WAVE_COUNT++;
+        ENEMY_SPEED = WAVE_COUNT == 2 ? 3 : 5;
+                ENEMY_COLOR = randomColor();
         newWave(killed/2);
     }
 
@@ -74,6 +79,7 @@ class Monster{
         this.h = SIZE + SPACINGY;
         this.x = x;
         this.y = y;
+        this.color = ENEMY_COLOR;
 
         //DO NOT FUCK WITH THE SPEED
         //ANYTHING THAT ISN'T 2.5, 3 OR 5 WILL CAUSE A WEIRD DELAY BETWEEN THE ENEMIES
@@ -100,12 +106,12 @@ class Monster{
                 this.speed *= -1;
                 this.y += this.oneDown;
             }else{
-                alert("Game Over!")
+                alert("Game Over!");
             }
         }else{
             this.x += this.speed;
         }
-        fill(150,123,182);
+        fill(this.color);
         return rect(this.x, this.y, this.w, this.h);
     }
 
@@ -146,12 +152,13 @@ class Bullet{
         this.x = x;
         this.y = y;
         this.speed = 3.5;
+        this.color = randomColor();
     }
 
     draw(){
 
         this.y -= this.speed;
-        fill("red");
+        fill(this.color);
         const shape = rect(this.x - this.w/2, this.y, this.w, this.h);
         return shape;
     }
@@ -173,4 +180,10 @@ function newWave(n){
         
         enemies.push(new Monster(x, y));
     }
+}
+
+function randomColor(){
+    const max = 255;
+    const R = Math.floor(Math.random() * Math.floor(max)), G = Math.floor(Math.random() * Math.floor(max)), B = Math.floor(Math.random() * Math.floor(max));
+    return color(R, G, B);
 }
