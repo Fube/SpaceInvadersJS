@@ -1,5 +1,7 @@
-const WIDTH = 700, HEIGHT= 700, SIZE = 25, SPEED = 3.333333, COOLDOWN = 0.2;
+const WIDTH = 700, HEIGHT= 700, SIZE = 25, SPEED = 3.333333, COOLDOWN = 0.5;
 const ENEMY_SIZE = 30;
+const ENEMY_SPEED = 2.5;
+const SPACINGY = 5;
 const bullets = [];
 const enemies = [];
 let killed = 0;
@@ -12,9 +14,11 @@ function setup(){
 
     //Spawn initial wave
     newWave(70);
+    document.getElementById`score`.textContent = killed;
 }
 
 function draw(){
+
 
     //Render background
     createCanvas(WIDTH, HEIGHT);
@@ -30,6 +34,12 @@ function draw(){
     for(let enemy of enemies){enemy.draw();}
     //Render game objects
     for (let bullet of bullets){
+        if(bullet.shouldDelete){
+            bullets.splice(bullets.indexOf(bullet), 1);
+            //Mark for GC
+            bullet = null; 
+            continue;
+        }
         bullet.draw();
 
         //Hit detection code
@@ -53,19 +63,22 @@ function draw(){
 
 
     player.draw();
+    document.getElementById`score`.textContent = `Score : ${killed}`;
 }
 
 class Monster{
     
     constructor(x, y){
 
-        this.w = SIZE + 5;
-        this.h = SIZE + 5;
+        this.w = SIZE + SPACINGY;
+        this.h = SIZE + SPACINGY;
         this.x = x;
         this.y = y;
+
         //DO NOT FUCK WITH THE SPEED
-        //ANYTHING THAT ISNT 2.5 OR 5 WILL CAUSE A WEIRD DELAY BETWEEN THE ENEMIES
-        this.speed = 2.5;
+        //ANYTHING THAT ISN'T 2.5, 3 OR 5 WILL CAUSE A WEIRD DELAY BETWEEN THE ENEMIES
+        this.speed = ENEMY_SPEED;
+
         this.oneDown = 3 + this.h;
     }
 
@@ -92,6 +105,7 @@ class Monster{
         }else{
             this.x += this.speed;
         }
+        fill(150,123,182);
         return rect(this.x, this.y, this.w, this.h);
     }
 
@@ -120,7 +134,7 @@ class Player{
 
     move(vx){this.x = this.x+vx;}
 
-    draw(){return rect(this.x, this.y, this.w, this.h);}
+    draw(){fill("white");return rect(this.x, this.y, this.w, this.h);}
 }
 
 class Bullet{
@@ -137,21 +151,25 @@ class Bullet{
     draw(){
 
         this.y -= this.speed;
-        return rect(this.x - this.w/2, this.y, this.w, this.h);
+        fill("red");
+        const shape = rect(this.x - this.w/2, this.y, this.w, this.h);
+        return shape;
     }
+
+    get shouldDelete(){return this.y < 0;}
 }
 
 function newWave(n){
-    
+
     for(let i = 0; i < n; i++){
 
         //I am writing this at 2:10 AM, I can not tell you how I came to these formulas. They might be really simple, but my brain is not vibing right now so I can not properly comment this.
         //TODO: explain
-        const spacing = 5;
-        const perRow = Math.floor(WIDTH / (ENEMY_SIZE + spacing)) - 1;
+        const spacingX = ENEMY_SPEED * 2;
+        const perRow = Math.floor(WIDTH / (ENEMY_SIZE + spacingX)) - 1;
 
-        const x = (i * (ENEMY_SIZE) + spacing * i) % ((ENEMY_SIZE + spacing) * perRow);
-        const y = Math.floor(i / perRow) * (spacing / 2) * -ENEMY_SIZE -ENEMY_SIZE;
+        const x = (i * (ENEMY_SIZE) + spacingX * i) % ((ENEMY_SIZE + spacingX) * perRow);
+        const y = Math.floor(i / perRow) * (SPACINGY / 2) * -ENEMY_SIZE -ENEMY_SIZE;
         
         enemies.push(new Monster(x, y));
     }
